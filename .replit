@@ -1,1 +1,1 @@
-run = "node index.js"
+run = "node server/index.js"
