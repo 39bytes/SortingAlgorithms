@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>repl.it</title>
+	<link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+<body onload="displayArray(currentArray)">
+	<div id="topButtons">
+		<div class="customSelect">
+			<select name="algorithms", id="algDropdown">
+				<option value="bubbleSort">Bubble Sort</option>
+				<option value="insertionSort">Insertion Sort</option>
+				<option value="quickSort">Quick Sort</option>
+				<option value="heapSort">Heap Sort</option>
+				<option value="mergeSort">Merge Sort</option>
+			</select>
+		</div>
+		<div id="parameters">
+			<label for="arraySize">Size</label>
+			<input type="number" name="arraySize" id="arraySizeInput" value=200>
+			<label for="arrayMin">Min</label>
+			<input type="number" name="arrayMin" id="arrayMinInput" value=0>
+			<label for="arrayMax">Max</label>
+			<input type="number" name="arrayMax" id="arrayMaxInput" value=400>
+		</div>
+		<button id="sortButton", onclick="executeSort()">Sort!</button>
+		<button onclick="generateNewArray()">New Array</button>
+
+		<script>
+			var sorting = false;
+			async function executeSort(){
+				if(sorting){
+					return;
+				}
+
+				let name = document.getElementById("algDropdown").value;
+				sorting = true;
+				let a = await window[name](currentArray);
+				sorting = false;
+				await highlightAll(a);
+			}
+		</script>
+	</div>
+	<canvas id="mainCanvas" width=1000, height=600></canvas>
+	<script src="script.js"></script>
+</body>
+</html>
