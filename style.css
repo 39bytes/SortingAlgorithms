@@ -17,9 +17,8 @@ body *{
 }
 
 #mainCanvas{
-  /* border: 1px solid #000000; */
   display: block;
-  margin: 100px auto auto auto;
+  margin: 10px auto auto auto;
   width: 1000px;
   height: 600px;
 }

@@ -11,6 +11,9 @@ var arraySize = 200;
 var arrayMin = 0;
 var arrayMax = 400;
 
+var comparisons = 0;
+var accesses = 0;
+
 var currentArray = getRandomArray(arraySize, arrayMin, arrayMax);
 
 var rectWidth = (document.getElementById("mainCanvas").width - 100) / arraySize;
@@ -22,6 +25,9 @@ function displayArray(arr){
 	for(var i = 0; i < arr.length; i++){
 		drawRect(50 + rectWidth * i, height - arr[i] * SCALE, "white", arr[i] * SCALE);
 	}
+
+	drawText(50, 60, `Comparisons: ${comparisons}`);
+	drawText(50, 90, `Array accesses: ${accesses}`);
 }
 
 function clearCanvas(){
@@ -34,6 +40,11 @@ function drawRect(x, y, color, h){
 	ctx.fillStyle = color
 	ctx.rect(x, y, rectWidth, h);
 	ctx.fill();
+}
+
+function drawText(x, y, text){
+	ctx.font = "24px Arial";
+	ctx.fillText(text, x, y);
 }
 
 async function highlightAll(arr){
@@ -49,6 +60,9 @@ function generateNewArray(){
 	arraySize = document.getElementById("arraySizeInput").value;
 	arrayMin = document.getElementById("arrayMinInput").value;
 	arrayMax = document.getElementById("arrayMaxInput").value;
+
+	comparisons = 0;
+	accesses = 0;
     
 	rectWidth = (document.getElementById("mainCanvas").width - 100) / arraySize;
 
@@ -82,6 +96,7 @@ async function showSwap(arr, x, y){ //shows a swap in array elements by highligh
 
 	//swap the items
 	arr.swap(x, y);
+	accesses += 2;
 
 	//wait a little
 	await sleep(DELAY)
@@ -103,6 +118,8 @@ async function bubbleSort(arr){
 				await showSwap(arr, i-1, i);
 				swapped = true;
 			}
+			accesses += 2;
+			comparisons += 2;
 		}
 	} while(swapped);
 	return arr;
@@ -115,8 +132,13 @@ async function insertionSort(arr){
 		while(j > 0 && (arr[j-1] > arr[j])){
 			await showSwap(arr, j-1, j);
 			j--;
+			
+			comparisons += 2;
+			accesses += 2;
 		}
 		i++;
+
+		comparisons += 1;
 	}
 	return arr;
 }
@@ -133,11 +155,15 @@ async function quickSortR(arr, low, high){
         await quickSortR(arr, low, p - 1);
         await quickSortR(arr, p + 1, high);
     }
+
+	comparisons += 1;
 }
 
 async function partition(arr, low, high){
     var pivot = arr[high]; //pick last element as pivot
     var i = low;
+
+	accesses++;
 
     for(j = low; j <= high; j++){
         if(arr[j] < pivot){ 
@@ -153,6 +179,8 @@ async function partition(arr, low, high){
 			arr.swap(i, j); //swap elements smaller than pivot to the front
 			i++;
 
+			accesses += 2;
+
 			await sleep(DELAY);
 
 			clearCanvas();
@@ -161,8 +189,11 @@ async function partition(arr, low, high){
 			drawRect(50 + rectWidth * (i), height - arr[i] * SCALE, "green", arr[i] * SCALE);
 			drawRect(50 + rectWidth * (j), height - arr[j] * SCALE, "red", arr[j] * SCALE);
         }
+		comparisons += 2;
+		accesses++;
     }
     [arr[i], arr[high]] = [arr[high], arr[i]];
+	accesses += 2;
 
     return i;
 }
@@ -173,14 +204,19 @@ async function heapSort(arr){
     //build heap
     for(var i = n/2 - 1; i >= 0; i--){
         await heapify(arr, n, i);
+		comparisons++;
     }
 
     for(var i = n - 1; i > 0; i--){
         arr.swap(0, i); //swap root of heap to the end as it's the biggest element in the array
         n--;
 
+		accesses += 2;
+
         //ensure new heap is a max heap
         await heapify(arr, n, 0);
+
+		comparisons++;
     }
     return arr;
 }
@@ -196,23 +232,31 @@ async function heapify(arr, size, i){ //max heapify
     if(right < size && arr[right] > arr[largest]){
         largest = right;
     }
+
+	comparisons += 4;
+	accesses += 4;
+
     if(largest !== i){
         await showSwap(arr, i, largest);
         await heapify(arr, size, largest);
     }
+	comparisons += 1;
 }
 
 async function mergeSort(arr){
 	var n = arr.length;
 
-	var workArr = [...arr]
+	var workArr = [...arr];
 	//keep merging until the merged array size is bigger than the original array size
 	for(width = 1; width < arr.length; width *= 2){
 		//merge two subarrays
 		for(var i = 0; i < n; i += 2 * width){
 			await merge(arr, i, Math.min(i + width, n), Math.min(i + 2 * width, n), workArr);
+
+			comparisons += 3;
 		}
 
+		comparisons++;
 		//swap arrays
 		arr = [...workArr];
 	}
@@ -233,12 +277,16 @@ async function merge(arr, left, right, end, workArr){
 		//i is within bounds and arr[i] is less than arr[j] or j out of bounds
 		if(i < right && (j >= end || arr[i] <= arr[j])){
 			workArr[k] = arr[i];
+			accesses += 2;
 			i++;
 		}
 		else{
 			workArr[k] = arr[j];
+			accesses += 2;
 			j++;
 		}
+		comparisons += 3;
+		accesses += 2;
 		drawRect(50 + rectWidth * (k), height - arr[k] * SCALE, "green", arr[k] * SCALE);
 
 		await sleep(DELAY);
